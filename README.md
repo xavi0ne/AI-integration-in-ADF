@@ -1,3 +1,6 @@
+![image](https://github.com/xavi0ne/AI-integration-in-ADF/assets/102357915/3b93b1c2-10ce-4716-a190-2de3d09e3834)
+
+
 # Develop Data Extraction Powerhouse using Azure Data Factory and Azure AI Services
 
 Learn and build an Azure lab for AI: Document Intelligence document processing using Azure Data Factory data flows.  
