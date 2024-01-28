@@ -1,0 +1,1470 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "type": "string",
+            "metadata": "Data Factory name",
+            "defaultValue": "adfTEST-svc"
+        },
+        "AzureKeyVault1_properties_typeProperties_baseUrl": {
+            "type": "string",
+            "defaultValue": "https://translator-kv.vault.usgovcloudapi.net/"
+        },
+        "CognitiveService651_properties_privateLinkResourceId": {
+            "type": "string",
+            "defaultValue": "/subscriptions/a5cdc8eb-472c-4b8b-a3a8-70c2ba30f7bb/resourceGroups/adf-rg/providers/Microsoft.CognitiveServices/accounts/taztrans06-sv"
+        },
+        "CognitiveService651_properties_groupId": {
+            "type": "string",
+            "defaultValue": "account"
+        },
+        "CognitiveService651_properties_fqdns": {
+            "type": "array",
+            "defaultValue": [
+                "taztrans06-sv.cognitiveservices.azure.us"
+            ]
+        },
+        "AzureSqlDatabase920_properties_privateLinkResourceId": {
+            "type": "string",
+            "defaultValue": "/subscriptions/a5cdc8eb-472c-4b8b-a3a8-70c2ba30f7bb/resourceGroups/adf-rg/providers/Microsoft.Sql/servers/adfsql"
+        },
+        "AzureSqlDatabase920_properties_groupId": {
+            "type": "string",
+            "defaultValue": "sqlServer"
+        },
+        "AzureSqlDatabase920_properties_fqdns": {
+            "type": "array",
+            "defaultValue": [
+                "adfsql.database.usgovcloudapi.net"
+            ]
+        },
+        "AzureBlobStorage1_properties_typeProperties_serviceEndpoint": {
+            "type": "string",
+            "defaultValue": "https://pawstore1.blob.core.usgovcloudapi.net/"
+        },
+        "AzureSqlDatabase1_properties_typeProperties_connectionString_secretName": {
+            "type": "string",
+            "defaultValue": "sql-connection-string"
+        },
+        "trigger1_properties_typeProperties_scope": {
+            "type": "string",
+            "defaultValue": "/subscriptions/a5cdc8eb-472c-4b8b-a3a8-70c2ba30f7bb/resourceGroups/DevOps/providers/Microsoft.Storage/storageAccounts/pawstore1"
+        }
+    },
+    "variables": {
+        "factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+    },
+    "resources": [
+        {
+            "name": "[concat(parameters('factoryName'), '/default')]",
+            "type": "Microsoft.DataFactory/factories/managedVirtualNetworks",
+            "apiVersion": "2018-06-01",
+            "properties": {},
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/AzureKeyVault1')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureKeyVault",
+                "typeProperties": {
+                    "baseUrl": "[parameters('AzureKeyVault1_properties_typeProperties_baseUrl')]"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/selfhostedRuntimeADT')]",
+            "type": "Microsoft.DataFactory/factories/integrationRuntimes",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "type": "SelfHosted",
+                "typeProperties": {}
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/AzureIR')]",
+            "type": "Microsoft.DataFactory/factories/integrationRuntimes",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "type": "Managed",
+                "typeProperties": {
+                    "computeProperties": {
+                        "location": "usgovvirginia",
+                        "dataFlowProperties": {
+                            "computeType": "General",
+                            "coreCount": 8,
+                            "timeToLive": 10,
+                            "cleanup": false,
+                            "customProperties": []
+                        },
+                        "pipelineExternalComputeScaleProperties": {
+                            "timeToLive": 60,
+                            "numberOfPipelineNodes": 1,
+                            "numberOfExternalNodes": 1
+                        }
+                    }
+                },
+                "managedVirtualNetwork": {
+                    "type": "ManagedVirtualNetworkReference",
+                    "referenceName": "default"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/managedVirtualNetworks/default')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/default/CognitiveService651')]",
+            "type": "Microsoft.DataFactory/factories/managedVirtualNetworks/managedPrivateEndpoints",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "privateLinkResourceId": "[parameters('CognitiveService651_properties_privateLinkResourceId')]",
+                "groupId": "[parameters('CognitiveService651_properties_groupId')]",
+                "fqdns": "[parameters('CognitiveService651_properties_fqdns')]"
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/managedVirtualNetworks/default')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/default/AzureSqlDatabase920')]",
+            "type": "Microsoft.DataFactory/factories/managedVirtualNetworks/managedPrivateEndpoints",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "privateLinkResourceId": "[parameters('AzureSqlDatabase920_properties_privateLinkResourceId')]",
+                "groupId": "[parameters('AzureSqlDatabase920_properties_groupId')]",
+                "fqdns": "[parameters('AzureSqlDatabase920_properties_fqdns')]"
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/managedVirtualNetworks/default')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureBlobStorage",
+                "typeProperties": {
+                    "serviceEndpoint": "[parameters('AzureBlobStorage1_properties_typeProperties_serviceEndpoint')]",
+                    "accountKind": "StorageV2"
+                },
+                "connectVia": {
+                    "referenceName": "AzureIR",
+                    "type": "IntegrationRuntimeReference"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/integrationRuntimes/AzureIR')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/AzureSqlDatabase1')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureSqlDatabase",
+                "typeProperties": {
+                    "connectionString": {
+                        "type": "AzureKeyVaultSecret",
+                        "store": {
+                            "referenceName": "AzureKeyVault1",
+                            "type": "LinkedServiceReference"
+                        },
+                        "secretName": "[parameters('AzureSqlDatabase1_properties_typeProperties_connectionString_secretName')]"
+                    }
+                },
+                "connectVia": {
+                    "referenceName": "AzureIR",
+                    "type": "IntegrationRuntimeReference"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/integrationRuntimes/AzureIR')]",
+                "[concat(variables('factoryId'), '/linkedServices/AzureKeyVault1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/Json1')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "AzureBlobStorage1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "Json",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "test.json",
+                        "container": "results"
+                    }
+                },
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "status": {
+                            "type": "string"
+                        },
+                        "createdDateTime": {
+                            "type": "string"
+                        },
+                        "lastUpdatedDateTime": {
+                            "type": "string"
+                        },
+                        "analyzeResult": {
+                            "type": "object",
+                            "properties": {
+                                "apiVersion": {
+                                    "type": "string"
+                                },
+                                "modelId": {
+                                    "type": "string"
+                                },
+                                "stringIndexType": {
+                                    "type": "string"
+                                },
+                                "content": {
+                                    "type": "string"
+                                },
+                                "pages": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "pageNumber": {
+                                                "type": "integer"
+                                            },
+                                            "angle": {
+                                                "type": "number"
+                                            },
+                                            "width": {
+                                                "type": "number"
+                                            },
+                                            "height": {
+                                                "type": "number"
+                                            },
+                                            "unit": {
+                                                "type": "string"
+                                            },
+                                            "words": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "content": {
+                                                            "type": "string"
+                                                        },
+                                                        "polygon": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "number"
+                                                            }
+                                                        },
+                                                        "confidence": {
+                                                            "type": "number"
+                                                        },
+                                                        "span": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "offset": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "length": {
+                                                                    "type": "integer"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "lines": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "content": {
+                                                            "type": "string"
+                                                        },
+                                                        "polygon": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "number"
+                                                            }
+                                                        },
+                                                        "spans": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "offset": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "length": {
+                                                                        "type": "integer"
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "spans": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "offset": {
+                                                            "type": "integer"
+                                                        },
+                                                        "length": {
+                                                            "type": "integer"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "styles": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "confidence": {
+                                                "type": "number"
+                                            },
+                                            "spans": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "offset": {
+                                                            "type": "integer"
+                                                        },
+                                                        "length": {
+                                                            "type": "integer"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "isHandwritten": {
+                                                "type": "boolean"
+                                            }
+                                        }
+                                    }
+                                },
+                                "documents": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "docType": {
+                                                "type": "string"
+                                            },
+                                            "boundingRegions": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "pageNumber": {
+                                                            "type": "integer"
+                                                        },
+                                                        "polygon": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "integer"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "fields": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "Address": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "content": {
+                                                                "type": "string"
+                                                            },
+                                                            "boundingRegions": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "pageNumber": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "polygon": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "number"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "confidence": {
+                                                                "type": "number"
+                                                            },
+                                                            "spans": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "offset": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "length": {
+                                                                            "type": "integer"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "valueAddress": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "houseNumber": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "road": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "postalCode": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "city": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "state": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "streetAddress": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "house": {
+                                                                        "type": "string"
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "CountryRegion": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "valueCountryRegion": {
+                                                                "type": "string"
+                                                            },
+                                                            "confidence": {
+                                                                "type": "number"
+                                                            }
+                                                        }
+                                                    },
+                                                    "DateOfBirth": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "valueDate": {
+                                                                "type": "string"
+                                                            },
+                                                            "content": {
+                                                                "type": "string"
+                                                            },
+                                                            "boundingRegions": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "pageNumber": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "polygon": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "number"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "confidence": {
+                                                                "type": "number"
+                                                            },
+                                                            "spans": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "offset": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "length": {
+                                                                            "type": "integer"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "DateOfExpiration": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "valueDate": {
+                                                                "type": "string"
+                                                            },
+                                                            "content": {
+                                                                "type": "string"
+                                                            },
+                                                            "boundingRegions": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "pageNumber": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "polygon": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "number"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "confidence": {
+                                                                "type": "number"
+                                                            },
+                                                            "spans": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "offset": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "length": {
+                                                                            "type": "integer"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "DateOfIssue": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "valueDate": {
+                                                                "type": "string"
+                                                            },
+                                                            "content": {
+                                                                "type": "string"
+                                                            },
+                                                            "boundingRegions": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "pageNumber": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "polygon": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "number"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "confidence": {
+                                                                "type": "number"
+                                                            },
+                                                            "spans": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "offset": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "length": {
+                                                                            "type": "integer"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "DocumentDiscriminator": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "valueString": {
+                                                                "type": "string"
+                                                            },
+                                                            "content": {
+                                                                "type": "string"
+                                                            },
+                                                            "boundingRegions": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "pageNumber": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "polygon": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "number"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "confidence": {
+                                                                "type": "number"
+                                                            },
+                                                            "spans": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "offset": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "length": {
+                                                                            "type": "integer"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "DocumentNumber": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "content": {
+                                                                "type": "string"
+                                                            },
+                                                            "boundingRegions": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "pageNumber": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "polygon": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "number"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "confidence": {
+                                                                "type": "number"
+                                                            },
+                                                            "spans": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "offset": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "length": {
+                                                                            "type": "integer"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "Endorsements": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "valueString": {
+                                                                "type": "string"
+                                                            },
+                                                            "content": {
+                                                                "type": "string"
+                                                            },
+                                                            "boundingRegions": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "pageNumber": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "polygon": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "number"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "confidence": {
+                                                                "type": "number"
+                                                            },
+                                                            "spans": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "offset": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "length": {
+                                                                            "type": "integer"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "FirstName": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "valueString": {
+                                                                "type": "string"
+                                                            },
+                                                            "content": {
+                                                                "type": "string"
+                                                            },
+                                                            "boundingRegions": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "pageNumber": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "polygon": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "number"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "confidence": {
+                                                                "type": "number"
+                                                            },
+                                                            "spans": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "offset": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "length": {
+                                                                            "type": "integer"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "Height": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "valueString": {
+                                                                "type": "string"
+                                                            },
+                                                            "content": {
+                                                                "type": "string"
+                                                            },
+                                                            "boundingRegions": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "pageNumber": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "polygon": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "number"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "confidence": {
+                                                                "type": "number"
+                                                            },
+                                                            "spans": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "offset": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "length": {
+                                                                            "type": "integer"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "LastName": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "valueString": {
+                                                                "type": "string"
+                                                            },
+                                                            "content": {
+                                                                "type": "string"
+                                                            },
+                                                            "boundingRegions": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "pageNumber": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "polygon": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "number"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "confidence": {
+                                                                "type": "number"
+                                                            },
+                                                            "spans": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "offset": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "length": {
+                                                                            "type": "integer"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "Region": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "valueString": {
+                                                                "type": "string"
+                                                            },
+                                                            "confidence": {
+                                                                "type": "number"
+                                                            }
+                                                        }
+                                                    },
+                                                    "Restrictions": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "valueString": {
+                                                                "type": "string"
+                                                            },
+                                                            "content": {
+                                                                "type": "string"
+                                                            },
+                                                            "boundingRegions": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "pageNumber": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "polygon": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "number"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "confidence": {
+                                                                "type": "number"
+                                                            },
+                                                            "spans": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "offset": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "length": {
+                                                                            "type": "integer"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "Sex": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "valueString": {
+                                                                "type": "string"
+                                                            },
+                                                            "content": {
+                                                                "type": "string"
+                                                            },
+                                                            "boundingRegions": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "pageNumber": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "polygon": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "number"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "confidence": {
+                                                                "type": "number"
+                                                            },
+                                                            "spans": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "offset": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "length": {
+                                                                            "type": "integer"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "VehicleClassifications": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "valueString": {
+                                                                "type": "string"
+                                                            },
+                                                            "content": {
+                                                                "type": "string"
+                                                            },
+                                                            "boundingRegions": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "pageNumber": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "polygon": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "number"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "confidence": {
+                                                                "type": "number"
+                                                            },
+                                                            "spans": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "offset": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "length": {
+                                                                            "type": "integer"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "confidence": {
+                                                "type": "number"
+                                            },
+                                            "spans": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "offset": {
+                                                            "type": "integer"
+                                                        },
+                                                        "length": {
+                                                            "type": "integer"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/Json2')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "AzureBlobStorage1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "Json",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "container": "dataflow-sink"
+                    }
+                },
+                "schema": {}
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/AzureSqlTable1')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "AzureSqlDatabase1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "AzureSqlTable",
+                "schema": [
+                    {
+                        "name": "FirstName",
+                        "type": "text"
+                    },
+                    {
+                        "name": "LastName",
+                        "type": "text"
+                    },
+                    {
+                        "name": "DateOfBirth",
+                        "type": "text"
+                    },
+                    {
+                        "name": "CountryRegion",
+                        "type": "text"
+                    },
+                    {
+                        "name": "DateOfExpiration",
+                        "type": "text"
+                    },
+                    {
+                        "name": "DateOfIssue",
+                        "type": "text"
+                    },
+                    {
+                        "name": "DocumentDiscriminator",
+                        "type": "text"
+                    },
+                    {
+                        "name": "DocumentNumber",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Endorsements",
+                        "type": "text"
+                    },
+                    {
+                        "name": "EyeColor",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Height",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Region",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Restrictions",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Sex",
+                        "type": "text"
+                    },
+                    {
+                        "name": "VehicleClassifications",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Weight",
+                        "type": "text"
+                    }
+                ],
+                "typeProperties": {
+                    "schema": "dbo",
+                    "table": "ID2"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/dataflow1')]",
+            "type": "Microsoft.DataFactory/factories/dataflows",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "description": "This dataflow takes the output from document intelligence and extracts the table information to a storage sink.\nThis specifically works with the Form Recognizer Layout API. You can also save the transformations as a flowlet if you would like to reuse the logic in other dataflows. ",
+                "type": "MappingDataFlow",
+                "typeProperties": {
+                    "sources": [
+                        {
+                            "dataset": {
+                                "referenceName": "Json1",
+                                "type": "DatasetReference"
+                            },
+                            "name": "ImportJson"
+                        }
+                    ],
+                    "sinks": [
+                        {
+                            "dataset": {
+                                "referenceName": "Json2",
+                                "type": "DatasetReference"
+                            },
+                            "name": "IDResults",
+                            "description": "Export Data to Json2",
+                            "rejectedDataLinkedService": {
+                                "referenceName": "AzureBlobStorage1",
+                                "type": "LinkedServiceReference"
+                            }
+                        }
+                    ],
+                    "transformations": [
+                        {
+                            "name": "sort1",
+                            "description": "Sorting rows on columns 'analyzeResult'"
+                        },
+                        {
+                            "name": "select1"
+                        },
+                        {
+                            "name": "derivedColumn1",
+                            "description": "Creating/updating the columns 'FirstName, LastName, DateOfBirth, CountryRegion, DateOfExpiration, DateOfIssue, DocumentDiscriminator, DocumentNumber, Endorsements, EyeColor, Height, Region, Restrictions, Sex, VehicleClassifications, Weight'"
+                        }
+                    ],
+                    "scriptLines": [
+                        "source(output(",
+                        "          analyzeResult as (apiVersion as string, content as string, documents as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, docType as string, fields as (Address as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, content as string, spans as (length as string, offset as string)[], type as string, valueAddress as (city as string, postalCode as string, road as string, state as string, streetAddress as string)), CountryRegion as (confidence as string, type as string, valueCountryRegion as string), DateOfBirth as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, content as string, spans as (length as string, offset as string)[], type as string, valueDate as string), DateOfExpiration as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, content as string, spans as (length as string, offset as string)[], type as string, valueDate as string), DateOfIssue as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, content as string, spans as (length as string, offset as string)[], type as string, valueDate as string), DocumentDiscriminator as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, content as string, spans as (length as string, offset as string)[], type as string, valueString as string), DocumentNumber as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, content as string, spans as (length as string, offset as string)[], type as string, valueString as string), Endorsements as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, content as string, spans as (length as string, offset as string)[], type as string, valueString as string), EyeColor as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, content as string, spans as (length as string, offset as string)[], type as string, valueString as string), FirstName as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, content as string, spans as (length as string, offset as string)[], type as string, valueString as string), Height as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, content as string, spans as (length as string, offset as string)[], type as string, valueString as string), LastName as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, content as string, spans as (length as string, offset as string)[], type as string, valueString as string), Region as (confidence as string, type as string, valueString as string), Restrictions as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, content as string, spans as (length as string, offset as string)[], type as string, valueString as string), Sex as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, content as string, spans as (length as string, offset as string)[], type as string, valueString as string), VehicleClassifications as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, content as string, spans as (length as string, offset as string)[], type as string, valueString as string), Weight as (boundingRegions as (pageNumber as string, polygon as string[])[], confidence as string, content as string, spans as (length as string, offset as string)[], type as string, valueString as string)), spans as (length as string, offset as string)[])[], modelId as string, pages as (angle as string, height as string, lines as (content as string, polygon as string[], spans as (length as string, offset as string)[])[], pageNumber as string, spans as (length as string, offset as string)[], unit as string, width as string, words as (confidence as string, content as string, polygon as string[], span as (length as string, offset as string))[])[], stringIndexType as string, styles as string[]),",
+                        "          createdDateTime as string,",
+                        "          lastUpdatedDateTime as string,",
+                        "          status as string",
+                        "     ),",
+                        "     allowSchemaDrift: true,",
+                        "     validateSchema: false,",
+                        "     ignoreNoFilesFound: false,",
+                        "     documentForm: 'documentPerLine') ~> ImportJson",
+                        "ImportJson sort(asc(analyzeResult.documents.fields, true)) ~> sort1",
+                        "sort1 select(mapColumn(",
+                        "          FirstName = analyzeResult.documents[1].fields.FirstName,",
+                        "          LastName = analyzeResult.documents[1].fields.LastName,",
+                        "          DateOfBirth = analyzeResult.documents[1].fields.DateOfBirth,",
+                        "          CountryRegion = analyzeResult.documents[1].fields.CountryRegion,",
+                        "          DateOfExpiration = analyzeResult.documents[1].fields.DateOfExpiration,",
+                        "          DateOfIssue = analyzeResult.documents[1].fields.DateOfIssue,",
+                        "          DocumentDiscriminator = analyzeResult.documents[1].fields.DocumentDiscriminator,",
+                        "          DocumentNumber = analyzeResult.documents[1].fields.DocumentNumber,",
+                        "          Endorsements = analyzeResult.documents[1].fields.Endorsements,",
+                        "          EyeColor = analyzeResult.documents[1].fields.EyeColor,",
+                        "          Height = analyzeResult.documents[1].fields.Height,",
+                        "          Region = analyzeResult.documents[1].fields.Region,",
+                        "          Restrictions = analyzeResult.documents[1].fields.Restrictions,",
+                        "          Sex = analyzeResult.documents[1].fields.Sex,",
+                        "          VehicleClassifications = analyzeResult.documents[1].fields.VehicleClassifications,",
+                        "          Weight = analyzeResult.documents[1].fields.Weight",
+                        "     ),",
+                        "     skipDuplicateMapInputs: true,",
+                        "     skipDuplicateMapOutputs: true) ~> select1",
+                        "select1 derive(FirstName = FirstName.valueString,",
+                        "          LastName = LastName.valueString,",
+                        "          DateOfBirth = DateOfBirth.valueDate,",
+                        "          CountryRegion = CountryRegion.valueCountryRegion,",
+                        "          DateOfExpiration = DateOfExpiration.valueDate,",
+                        "          DateOfIssue = DateOfIssue.valueDate,",
+                        "          DocumentDiscriminator = DocumentDiscriminator.valueString,",
+                        "          DocumentNumber = DocumentNumber.valueString,",
+                        "          Endorsements = Endorsements.valueString,",
+                        "          EyeColor = EyeColor.valueString,",
+                        "          Height = Height.valueString,",
+                        "          Region = Region.valueString,",
+                        "          Restrictions = Restrictions.valueString,",
+                        "          Sex = Sex.valueString,",
+                        "          VehicleClassifications = VehicleClassifications.valueString,",
+                        "          Weight = Weight.valueString) ~> derivedColumn1",
+                        "derivedColumn1 sink(allowSchemaDrift: true,",
+                        "     validateSchema: false,",
+                        "     partitionFileNames:['testOutput.json'],",
+                        "     skipDuplicateMapInputs: true,",
+                        "     skipDuplicateMapOutputs: true,",
+                        "     mapColumn(",
+                        "          FirstName,",
+                        "          LastName,",
+                        "          DateOfBirth,",
+                        "          CountryRegion,",
+                        "          DateOfExpiration,",
+                        "          DateOfIssue,",
+                        "          DocumentDiscriminator,",
+                        "          DocumentNumber,",
+                        "          Endorsements,",
+                        "          EyeColor,",
+                        "          Height,",
+                        "          Region,",
+                        "          Restrictions,",
+                        "          Sex,",
+                        "          VehicleClassifications,",
+                        "          Weight",
+                        "     ),",
+                        "     partitionBy('hash', 1)) ~> IDResults"
+                    ]
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/datasets/Json1')]",
+                "[concat(variables('factoryId'), '/datasets/Json2')]",
+                "[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/pipeline1')]",
+            "type": "Microsoft.DataFactory/factories/pipelines",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "activities": [
+                    {
+                        "name": "ID extraction",
+                        "type": "ExecuteDataFlow",
+                        "dependsOn": [],
+                        "policy": {
+                            "timeout": "0.12:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "dataflow": {
+                                "referenceName": "dataflow1",
+                                "type": "DataFlowReference",
+                                "parameters": {},
+                                "datasetParameters": {
+                                    "ImportJson": {},
+                                    "IDResults": {}
+                                }
+                            },
+                            "staging": {},
+                            "integrationRuntime": {
+                                "referenceName": "AzureIR",
+                                "type": "IntegrationRuntimeReference"
+                            },
+                            "traceLevel": "Fine"
+                        }
+                    },
+                    {
+                        "name": "Copy from Storage to SQL",
+                        "type": "Copy",
+                        "dependsOn": [
+                            {
+                                "activity": "ID extraction",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "policy": {
+                            "timeout": "0.12:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "source": {
+                                "type": "JsonSource",
+                                "storeSettings": {
+                                    "type": "AzureBlobStorageReadSettings",
+                                    "recursive": true,
+                                    "wildcardFileName": "*.json",
+                                    "enablePartitionDiscovery": false
+                                },
+                                "formatSettings": {
+                                    "type": "JsonReadSettings"
+                                }
+                            },
+                            "sink": {
+                                "type": "AzureSqlSink",
+                                "writeBehavior": "insert",
+                                "sqlWriterUseTableLock": false,
+                                "disableMetricsCollection": false
+                            },
+                            "enableStaging": false,
+                            "translator": {
+                                "type": "TabularTranslator",
+                                "mapComplexValuesToString": true
+                            }
+                        },
+                        "inputs": [
+                            {
+                                "referenceName": "Json2",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "referenceName": "AzureSqlTable1",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ]
+                    }
+                ],
+                "policy": {
+                    "elapsedTimeMetric": {}
+                },
+                "annotations": []
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/dataflows/dataflow1')]",
+                "[concat(variables('factoryId'), '/integrationRuntimes/AzureIR')]",
+                "[concat(variables('factoryId'), '/datasets/Json2')]",
+                "[concat(variables('factoryId'), '/datasets/AzureSqlTable1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/trigger1')]",
+            "type": "Microsoft.DataFactory/factories/triggers",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "runtimeState": "Started",
+                "pipelines": [
+                    {
+                        "pipelineReference": {
+                            "referenceName": "pipeline1",
+                            "type": "PipelineReference"
+                        },
+                        "parameters": {}
+                    }
+                ],
+                "type": "BlobEventsTrigger",
+                "typeProperties": {
+                    "blobPathBeginsWith": "/dataflow-sink/blobs/",
+                    "ignoreEmptyBlobs": true,
+                    "scope": "[parameters('trigger1_properties_typeProperties_scope')]",
+                    "events": [
+                        "Microsoft.Storage.BlobCreated"
+                    ]
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/pipelines/pipeline1')]"
+            ]
+        }
+    ]
+}
