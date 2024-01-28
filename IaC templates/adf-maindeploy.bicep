@@ -87,7 +87,7 @@ module AZIR 'IntegrationRuntimes/module-AzureIR.bicep' = [ for (adf, i) in adfDe
 }]
 
 //adfManualExportUpdatedTemplate
-module adfTEST_svc_ArmTemplate_0 'adfUpdates/ArmTemplate_0.json' = [ for (adf, i) in adfDetails: {
+module adfTEST_svc_ArmTemplateUpdate 'adfUpdates/adfUpdates.json' = [ for (adf, i) in adfDetails: {
   name: 'adfTEST-svc_ArmTemplate_0${i}'
   scope: resourceGroup(adf.adfResourceGroup)
   params: {
